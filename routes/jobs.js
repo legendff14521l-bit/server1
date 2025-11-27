@@ -42,11 +42,6 @@ router.delete("/:jobId", async (req, res) => {
   }
 });
 
-
-/* --------------------------------------------------
-   ANALYZE MULTIPLE USERS FOR A JOB  
-   (POST /api/jobs/:id/analyze)
---------------------------------------------------- */
 router.post("/:id/analyze", async (req, res) => {
   try {
     const job = await Job.findById(req.params.id);
