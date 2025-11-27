@@ -14,7 +14,7 @@ connectDB();
 
 app.use(
   cors({
-    origin: "https://git-track-chi.vercel.app/",
+    origin: "https://git-track-chi.vercel.app",
     credentials: false
   })
 );
