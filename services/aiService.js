@@ -60,7 +60,7 @@ Return ONLY valid JSON. No markdown, no explanation.
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4.1-mini",
+      model: "gpt-4.1-mini", // upgrade to gpt-4.1 / gpt-4.1-pro if your plan supports it
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: systemPrompt },
@@ -85,20 +85,22 @@ Return ONLY valid JSON. No markdown, no explanation.
 }
 
 /**
- * HIGH-QUALITY REALISTIC MOCK AI (UPGRADED)
+ * HIGH-QUALITY REALISTIC MOCK AI
  * Creates unique synthetic output using real GitHub signals.
  */
 function buildMockAnalysis(githubSignals, isMock = false) {
   const { stats = {}, languages = [], userProfile = {}, repos = [] } = githubSignals;
 
-  // GitHub profile values
   const primaryLang = languages[0]?.lang || "JavaScript";
-  const repoCount = stats.repoCount || 0;
-  const totalCommits = stats.totalCommits || 0;
-  const followers = stats.followers || 0;
+  const repoCount = stats.repoCount || repos.length || 0;
+  const followers = stats.followers || userProfile.followers || 0;
 
-  // Determine secondary languages
-  const topLangs = languages.slice(1, 4).map(l => l.lang);
+  // Approximate "total commits" if not supplied
+  const totalCommits =
+    stats.totalCommits ||
+    Math.round((repoCount || 0) * 20 + (stats.recentActiveRepos || 0) * 15);
+
+  const topLangs = languages.slice(1, 4).map((l) => l.lang);
 
   // ------------------------------------
   // 1. BUILD REALISTIC SCORE
@@ -123,7 +125,7 @@ function buildMockAnalysis(githubSignals, isMock = false) {
   else if (totalCommits > 250) experienceLevel = "Mid-level";
 
   // ------------------------------------
-  // 3. WORK STYLE (SEMI-REALISTIC)
+  // 3. WORK STYLE
   // ------------------------------------
   const styleTemplates = [
     `Shows consistent growth with a steady commit pattern and focus on ${primaryLang}.`,
@@ -133,11 +135,12 @@ function buildMockAnalysis(githubSignals, isMock = false) {
     `Shows signs of disciplined engineering habits with frequent commit bursts.`
   ];
 
+  const indexSeed = (followers + repoCount + totalCommits) || 0;
   const workStyle =
-    styleTemplates[(followers + repoCount + totalCommits) % styleTemplates.length];
+    styleTemplates[indexSeed % styleTemplates.length];
 
   // ------------------------------------
-  // 4. TOP SKILLS (UNIQUE)
+  // 4. TOP SKILLS
   // ------------------------------------
   const topSkills = [];
 
@@ -150,14 +153,16 @@ function buildMockAnalysis(githubSignals, isMock = false) {
         ? "intermediate"
         : "beginner",
     confidence: 0.85,
-    evidence: `Primary language across ${repoCount} repositories and dominant in commit activity.`
+    evidence: `Primary language across ${
+      repoCount || "multiple"
+    } repositories and dominant in commit activity.`
   });
 
   topSkills.push({
     name: "Git & Version Control",
     level: "intermediate",
     confidence: 0.9,
-    evidence: `Commit history shows consistent usage across multiple projects.`
+    evidence: `Commit history indicates frequent commits across different projects.`
   });
 
   if (topLangs.length > 0) {
@@ -165,50 +170,50 @@ function buildMockAnalysis(githubSignals, isMock = false) {
       name: topLangs[0],
       level: "beginner",
       confidence: 0.6,
-      evidence: `Appears in secondary repositories and some experimental projects.`
+      evidence: `Appears in secondary repositories and experimental work.`
     });
   }
 
   // ------------------------------------
-  // 5. TOP ROLES (REALISTIC)
+  // 5. TOP ROLES
   // ------------------------------------
   const topRoles = [
     {
       title: `${primaryLang} Developer`,
       fitScore: score,
-      notes: `Strong alignment based on repo activity and language usage.`
+      notes: `Good alignment based on repo activity, language usage and approximate commit volume.`
     },
     {
       title: "Full-Stack Developer",
       fitScore: score - 5,
-      notes: `Could succeed depending on exposure to backend frameworks.`
+      notes: `Could be suited depending on backend / infra exposure.`
     }
   ];
 
   // ------------------------------------
-  // 6. STRENGTHS — UNIQUE PER SIGNALS
+  // 6. STRENGTHS
   // ------------------------------------
   const strengths = [
     `Consistent work with ${primaryLang}.`,
     followers > 20
-      ? "Has solid developer presence with growing follower base."
-      : "Shows active learning in public.",
+      ? "Has visible developer presence with a growing follower base."
+      : "Shows learning in public through open repositories.",
     repoCount > 10
-      ? "Maintains a wide range of repositories."
-      : "Focuses deeply on a few core projects.",
+      ? "Maintains a diverse set of repositories."
+      : "Focuses on a smaller set of core projects.",
     totalCommits > 300
-      ? "Strong coding frequency and iteration habits."
-      : "Commit activity indicates steady ongoing development."
+      ? "Commit volume suggests strong iteration habits."
+      : "Gradually increasing commit activity over time."
   ];
 
   // ------------------------------------
-  // 7. RISKS — REALISTIC WARNING SIGNALS
+  // 7. RISKS
   // ------------------------------------
   const risks = [];
 
   if (repoCount < 3) risks.push("Limited repository history available.");
   if (followers < 5) risks.push("Low social proof and community visibility.");
-  if (totalCommits < 100) risks.push("Shallow commit history; depth unknown.");
+  if (totalCommits < 100) risks.push("Shallow commit history; depth of experience unclear.");
 
   risks.push("Mock analysis: skill depth not validated using real AI.");
 
@@ -216,10 +221,10 @@ function buildMockAnalysis(githubSignals, isMock = false) {
   // 8. RECOMMENDATIONS
   // ------------------------------------
   const recommendations = [
-    "Add clear README files with project goals and architecture.",
-    "Highlight best work by pinning key repositories.",
-    "Consider contributing to open-source to demonstrate collaboration.",
-    "Include tests and CI workflows to show engineering maturity."
+    "Add clear README files with project goals and architecture decisions.",
+    "Pin 2–3 flagship repositories that best demonstrate capabilities.",
+    "Contribute to open-source to showcase collaboration and review skills.",
+    "Introduce tests and CI workflows to demonstrate engineering maturity."
   ];
 
   return {

@@ -28,6 +28,21 @@ router.get("/", async (req, res) => {
   res.json(jobs);
 });
 
+router.delete("/:jobId", async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const job = await Job.findByIdAndDelete(jobId);
+
+    if (!job) return res.status(404).json({ error: "Job not found" });
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error("Delete job error:", err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 /* --------------------------------------------------
    ANALYZE MULTIPLE USERS FOR A JOB  
    (POST /api/jobs/:id/analyze)
